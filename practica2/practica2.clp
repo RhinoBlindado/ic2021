@@ -1,3 +1,6 @@
+; PRACTICA 2: Insertar conocimiento experto para jugar 4 en raya
+; Autor: Valentino Lugli - Marzo 2021
+
 ;;;;;;; JUGADOR DE 4 en RAYA ;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;;;;;;;;; Version de 4 en raya clásico: Tablero de 6x7, donde se introducen fichas por arriba
@@ -117,7 +120,7 @@
 )
 
 
-;;;;;;;;;;; ACTUALIZAR  ESTADO TRAS JUGADA DE CLISP ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;; ACTUALIZAR  ESTADO TRAS JUGADA DE CLIPS ;;;;;;;;;;;;;;;;;;
 
 (defrule juega_clisp_actualiza_estado
 ?f <- (Juega M ?c)
@@ -138,7 +141,7 @@
 (assert (Turno J) (Tablero Juego 6 ?c M))
 )
 
-;;;;;;;;;;; CLISP JUEGA SIN CRITERIO ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;; CLIPS JUEGA SIN CRITERIO ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defrule elegir_jugada_aleatoria
 (declare (salience -9998))
 ?f <- (Turno M)

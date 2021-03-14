@@ -33,7 +33,7 @@
    (mujer Liliana)
    (mujer Zuldy)
    (mujer Daniela)
-   (mujer MariCarmen)
+   (mujer CarmenLiliana)
 )
 
 ;  Plantilla para relaciones
