@@ -1,6 +1,3 @@
-; PRACTICA 2: Insertar conocimiento experto para jugar 4 en raya
-; Autor: Valentino Lugli - Marzo 2021
-
 ;;;;;;; JUGADOR DE 4 en RAYA ;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;;;;;;;;; Version de 4 en raya clásico: Tablero de 6x7, donde se introducen fichas por arriba
@@ -120,7 +117,7 @@
 )
 
 
-;;;;;;;;;;; ACTUALIZAR  ESTADO TRAS JUGADA DE CLIPS ;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;; ACTUALIZAR  ESTADO TRAS JUGADA DE CLISP ;;;;;;;;;;;;;;;;;;
 
 (defrule juega_clisp_actualiza_estado
 ?f <- (Juega M ?c)
@@ -141,7 +138,7 @@
 (assert (Turno J) (Tablero Juego 6 ?c M))
 )
 
-;;;;;;;;;;; CLIPS JUEGA SIN CRITERIO ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;; CLISP JUEGA SIN CRITERIO ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defrule elegir_jugada_aleatoria
 (declare (salience -9998))
 ?f <- (Turno M)
@@ -297,4 +294,55 @@
 ;;;;; ¡¡¡¡¡¡¡¡¡¡ Añadir conocimiento para que juege como vosotros jugariais !!!!!!!!!!!!
 
 
+; PRACTICA 2: Insertar conocimiento experto para jugar 4 en raya
+; Autor: Valentino Lugli - Marzo 2021
 
+; CHEQUEO DE ESTADO
+
+;   Revisar si alguien va a ganar.
+;   
+(defrule checkAlmostWin_horizontal
+    (Turno M)
+    
+    (Tablero ?t ?i ?c1 ?jugador)
+    (Tablero ?t ?i ?c2 ?jugador) 
+    (test (= (+ ?c1 1) ?c2))
+    
+    (Tablero ?t ?i ?c3 ?jugador)
+    (test (= (+ ?c1 2) ?c3))
+    
+    (test (or (eq ?jugador M) (eq ?jugador J) ))
+
+    (Tablero ?t ?i ?c4 _)
+    (test (= (+ ?c1 3) ?c4))
+
+    =>
+
+    (printout t ">> Regla disparada: Va a ganar horizontal " ?jugador " en columna " ?c4 crlf)
+    (assert (almostWin ?jugador ?c4))
+)
+
+(defrule checkAlmostWin_vertical
+    (Turno M)
+
+    (Tablero ?t ?i1 ?c ?jugador)
+    (Tablero ?t ?i2 ?c ?jugador)
+    (test (= (+ ?i1 1) ?i2))
+
+    (Tablero ?t ?i3 ?c  ?jugador)
+    (test (= (+ ?i1 2) ?i3))
+
+    (test (or (eq ?jugador M) (eq ?jugador J) ))
+        
+    =>
+
+    (printout t ">> Regla disparada: Va a ganar vertical " ?jugador " en columna " ?c crlf)
+    (assert (almostWin ?jugador ?c))
+)
+
+;   Revisar si la maquina va a ganar.
+;(defrule checkAlmostWin_Bot
+;    (Turno M)
+;    =>
+;    (printout t ">>")
+;)
