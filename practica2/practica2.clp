@@ -298,51 +298,136 @@
 ; Autor: Valentino Lugli - Marzo 2021
 
 ; CHEQUEO DE ESTADO
+; 1) Crear reglas para que el sistema deduzca la posición siguiente y anterior a una posición
+(defrule nextPos
+    (Tablero Juego ?f ?c M)
+        =>
+    (assert (nextPos V (+ 1 ?f) ?c))
+    (assert (nextPos H ?f (+ 1 ?c)))
+    (assert (nextPos D1 (- ?f 1) (+ 1 ?c))) ; Diagonal directa
+    (assert (nextPos D2 (+ 1 ?f) (+ 1 ?c)))
+)
 
-;   Revisar si alguien va a ganar.
-;   
-(defrule checkAlmostWin_horizontal
+(defrule prevPos
+    (Tablero Juego ?f ?c M)
+        =>
+    (assert (prevPos V (- ?f 1) ?c))
+    (assert (prevPos H ?f (- ?c 1)))
+    (assert (prevPos D1 (+ ?f 1) (- ?c 1)))
+    (assert (prevPos D2 (- ?f 1) (- ?c 1)))
+)
+
+; 2) Crear reglas para que el sistema deduzca (y mantenga) donde caería una ficha si se juega en la columna c.
+
+
+; 3) Crear reglas para que el sistema deduzca que hay dos fichas de un mismo jugador en línea en una dirección y posiciones concretas
+(defrule twoTokens_vertical
     (Turno M)
-    
-    (Tablero ?t ?i ?c1 ?jugador)
-    (Tablero ?t ?i ?c2 ?jugador) 
+    (Tablero Juego ?f1 ?c ?player)
+    (Tablero Juego ?f2 ?c ?player)
+
+    ; Filtrar para que sea solo jugador o maquina
+    (test (or (eq ?player M) (eq ?player J)))
+
+    ; Si son iguales es que hay conexion.
+    (test (= (+ ?f1 1) ?f2))
+        =>
+    (assert (twoTokens V ?player ?f1 ?c ?f2 ?c))
+)
+
+(defrule twoTokens_horizontal
+    (Turno M)
+    (Tablero Juego ?f ?c1 ?player)
+    (Tablero Juego ?f ?c2 ?player)
+
+    ; Filtrar para que sea solo jugador o maquina
+    (test (or (eq ?player M) (eq ?player J)))
+
+    ; Si son iguales es que hay conexion.
     (test (= (+ ?c1 1) ?c2))
-    
-    (Tablero ?t ?i ?c3 ?jugador)
-    (test (= (+ ?c1 2) ?c3))
-    
-    (test (or (eq ?jugador M) (eq ?jugador J) ))
-
-    (Tablero ?t ?i ?c4 _)
-    (test (= (+ ?c1 3) ?c4))
-
-    =>
-
-    (printout t ">> Regla disparada: Va a ganar horizontal " ?jugador " en columna " ?c4 crlf)
-    (assert (almostWin ?jugador ?c4))
+        =>
+    (assert (twoTokens H ?player ?f ?c1 ?f ?c2))
 )
 
-(defrule checkAlmostWin_vertical
+(defrule twoTokens_mainDiag
     (Turno M)
+    (Tablero Juego ?f1 ?c1 ?player)
+    (Tablero Juego ?f2 ?c2 ?player)
 
-    (Tablero ?t ?i1 ?c ?jugador)
-    (Tablero ?t ?i2 ?c ?jugador)
-    (test (= (+ ?i1 1) ?i2))
+    ; Filtrar para que sea solo jugador o maquina
+    (test (or (eq ?player M) (eq ?player J)))
 
-    (Tablero ?t ?i3 ?c  ?jugador)
-    (test (= (+ ?i1 2) ?i3))
-
-    (test (or (eq ?jugador M) (eq ?jugador J) ))
-        
-    =>
-
-    (printout t ">> Regla disparada: Va a ganar vertical " ?jugador " en columna " ?c crlf)
-    (assert (almostWin ?jugador ?c))
+    ; Si son iguales es que hay conexion.
+    (test (= (+ ?c1 1) ?c2))
+    (test (= (+ ?f1 1) ?f2))
+        =>
+    (assert (twoTokens D1 ?player ?f1 ?c1 ?f2 ?c2))
 )
 
-;   Revisar si la maquina va a ganar.
-;(defrule checkAlmostWin_Bot
-;    (Turno M)
-;    =>
-;    (printout t ">>")
-;)
+(defrule twoTokens_secondDiag
+    (Turno M)
+    (Tablero Juego ?f1 ?c1 ?player)
+    (Tablero Juego ?f2 ?c2 ?player)
+
+    ; Filtrar para que sea solo jugador o maquina
+    (test (or (eq ?player M) (eq ?player J)))
+
+    ; Si son iguales es que hay conexion.
+    (test (= (+ ?c1 1) ?c2))
+    (test (= (- ?f1 1) ?f2))
+        =>
+    (assert (twoTokens D2 ?player ?f1 ?c1 ?f2 ?c2))
+)
+
+; 4) Crear reglas para deducir que un jugador tiene 3 en línea en una dirección y posiciones concretas
+(defrule threeTokensInLine_vertical
+    (Turno M)
+    (Tablero Juego ?f1 ?c ?player)
+    (Tablero Juego ?f2 ?c ?player)
+    (Tablero Juego ?f3 ?c ?player)
+
+    ; Filtrar para que sea solo jugador o maquina.
+    (test (or (eq ?player M) (eq ?player J)))
+
+    ; Evaluar que existan 3 fichas en linea.
+    (test (= (+ ?f1 1) ?f2))
+    (test (= (+ ?f1 2) ?f3))
+        =>
+    (assert (threeTokensInLine V ?player ?f1 ?c ?f3 ?c))
+)
+
+(defrule threeTokensInLine_horizontal
+    (Turno M)
+    (Tablero Juego ?f ?c1 ?player)
+    (Tablero Juego ?f ?c2 ?player)
+    (Tablero Juego ?f ?c3 ?player)
+
+    ; Filtrar para que sea solo jugador o maquina.
+    (test (or (eq ?player M) (eq ?player J)))
+
+    ; Evaluar que existan 3 fichas en linea.
+    (test (= (+ ?c1 1) ?c2))
+    (test (= (+ ?c1 2) ?c3))
+        =>
+    (assert (threeTokensInLine H ?player ?f ?c1 ?f ?c3))
+)
+
+(defrule threeTokensInLine_mainDiag
+    (Turno M)
+    (Tablero Juego ?f1 ?c1 ?player)
+    (Tablero Juego ?f2 ?c2 ?player)
+    (Tablero Juego ?f3 ?c3 ?player)
+
+    ; Filtrar para que sea solo jugador o maquina.
+    (test (or (eq ?player M) (eq ?player J)))
+
+    ; Evaluar que existan 3 fichas en linea.
+    (test (= (+ ?c1 1) ?c2))
+    (test (= (+ ?c1 2) ?c3))
+    (test (= (+ ?f1 1) ?f2))
+    (test (= (+ ?f1 2) ?f3))
+        =>
+    (assert (threeTokensInLine D1 ?player ?f1 ?c1 ?f2 ?c3))
+)
+
+; 5) Añadir reglas para que el sistema deduzca (y mantenga) que un jugador ganaría si jugase en una columna.
