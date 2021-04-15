@@ -643,13 +643,13 @@
 ; REGLAS BASADAS EN MI CONOCIMIENTO
 
 ;   Mi Conocimiento:
-;       Nunca he jugado a este juego antes, por lo tanto mi estrategia personal es ir de ofensiva e intentar evitar que
+;       Nunca he jugado a este juego antes, por lo tanto mi estrategia personal es ir estar a la defensiva e intentar evitar que
 ;       mi contrincante avance mientras que tambien dentro de lo posible intento tambien ir haciendo yo un 4 en raya.
-
 
 ;   Reglas Defensivas:
 ;   Si detecta que el contrincante ha colocado dos piezas juntas y tiene un hueco de un lado, insertar una pieza.
 
+;   Si hay dos fichas del jugador en horizontal y en la siguiente columna puedo meter una ficha, lo hago.
 (defrule defend_h_r
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -663,6 +663,7 @@
     (assert (Juega M ?c3))
 )
 
+;   Idem por el otro lado.
 (defrule defend_h_l
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -676,6 +677,7 @@
     (assert (Juega M ?c3))
 )
 
+;   Si hay dos fichas puestas verticalmente y puedo colocar yo una ficha encima, lo hago.
 (defrule defend_v
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -689,6 +691,7 @@
     (assert (Juega M ?c))
 )
 
+;   Si hay dos fichas en diagonal y puedo colocar una tercera para trancar la jugada, lo hago.
 (defrule defend_d1_top
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -703,6 +706,7 @@
     (assert (Juega M ?c3))
 )
 
+;   Idem.
 (defrule defend_d1_bottom
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -717,6 +721,7 @@
     (assert (Juega M ?c3))
 )
 
+;   Idem.
 (defrule defend_d2_top
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -731,6 +736,7 @@
     (assert (Juega M ?c3))
 )
 
+;   Idem.
 (defrule defend_d2_bottom
     (declare (salience 20))
     ?turn <- (Turno M)
@@ -748,6 +754,8 @@
 
 ; Reglas Ofensivas:
 ; Si no hay movimientos que pongan en peligro la partida, intentar realizar un 4 en raya.
+
+;       Movimientos con una ficha ya en el tablero.
 (defrule make1stMove_hRight
     (declare (salience 10))
     ?turn <- (Turno M)
@@ -781,6 +789,7 @@
     (assert (Juega M ?c))
 )
 
+;       Movimientos con dos fichas seguidas en el tablero
 (defrule make2ndMove_hLeft
     (declare (salience 10))
     ?turn <- (Turno M)
@@ -788,7 +797,7 @@
     (wouldFall ?f ?c)
     (test (= (+ ?c 1) ?c1))
     =>
-    (printout t "Juego de manera ofensiva horizontal en la columna " ?c crlf)
+    (printout t "Juego de manera ofensiva horizontal izquierda en la columna " ?c crlf)
     (retract ?turn)
     (assert (Juega M ?c))
 )
@@ -800,7 +809,7 @@
     (wouldFall ?f ?c)
     (test (= (+ ?c2 1) ?c))
     =>
-    (printout t "Juego de manera ofensiva horizontal en la columna " ?c crlf)
+    (printout t "Juego de manera ofensiva horizontal derecha en la columna " ?c crlf)
     (retract ?turn)
     (assert (Juega M ?c))
 )
@@ -817,7 +826,63 @@
     (assert (Juega M ?c))
 )
 
-; Si el bot detecta que puede realizar una jugada ganadora, tiene prioridad sobre el resto de reglas.
+(defrule make2ndMove_d1_top
+    (declare (salience 10))
+    ?turn <- (Turno M)
+    (twoTokens D1 M ?f1 ?c1 ?f2 ?c2)
+    ?rule <- (wouldFall ?f3 ?c3)
+    (test (= (- ?f1 1) ?f3))
+    (test (= (- ?c1 1) ?c3))
+        =>
+    (printout t "Juego de manera ofensiva diagonal principal arriba en la columna " ?c3 crlf)
+    (retract ?turn)
+    (retract ?rule)
+    (assert (Juega M ?c3))
+)
+
+(defrule make2ndMove_d1_bottom
+    (declare (salience 10))
+    ?turn <- (Turno M)
+    (twoTokens D1 M ?f1 ?c1 ?f2 ?c2)
+    ?rule <- (wouldFall ?f3 ?c3)
+    (test (= (+ ?f2 1) ?f3))
+    (test (= (+ ?c2 1) ?c3))
+        =>
+    (printout t "Juego de manera ofensiva por diagonal principal abajo en la columna " ?c3 crlf)
+    (retract ?turn)
+    (retract ?rule)
+    (assert (Juega M ?c3))
+)
+
+(defrule make2ndMove_d2_top
+    (declare (salience 20))
+    ?turn <- (Turno M)
+    (twoTokens D2 M ?f1 ?c1 ?f2 ?c2)
+    ?rule <- (wouldFall ?f3 ?c3)
+    (test (= (- ?f2 1) ?f3))
+    (test (= (+ ?c2 1) ?c3))
+        =>
+    (printout t "Juego de manera ofensiva por diagonal inversa arriba en la columna " ?c3 crlf)
+    (retract ?turn)
+    (retract ?rule)
+    (assert (Juega M ?c3))
+)
+
+(defrule make2ndMove_d2_bottom
+    (declare (salience 20))
+    ?turn <- (Turno M)
+    (twoTokens D2 M ?f1 ?c1 ?f2 ?c2)
+    ?rule <- (wouldFall ?f3 ?c3)
+    (test (= (+ ?f1 1) ?f3))
+    (test (= (- ?c1 1) ?c3))
+        =>
+    (printout t "Juego de manera ofensiva por diagonal inversa abajo en la columna " ?c3 crlf)
+    (retract ?turn)
+    (retract ?rule)
+    (assert (Juega M ?c3))
+)
+
+;       Si el bot detecta que puede realizar una jugada ganadora, tiene prioridad sobre el resto de reglas.
 (defrule tryToWin
     (declare (salience 45))
     ?turn <- (Turno M)
@@ -828,7 +893,7 @@
     (assert (Juega M ?c))
 )
 
-; Limpiar las reglas que indican donde caeria una pieza ya que esto varia de turno a turno.
+;       Limpiar las reglas que indican donde caeria una pieza ya que esto varia de turno a turno.
 (defrule cleanUp_WouldFall
     (declare (salience 5))
     (Juega M ?)
