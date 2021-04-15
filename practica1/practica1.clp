@@ -79,7 +79,7 @@
    (Relacion (tipo ESPOSO) (sujeto Argilio) (objeto Liliana))
    (Relacion (tipo ESPOSO) (sujeto Florideo) (objeto Zuldy))
    (Relacion (tipo ESPOSO) (sujeto Roman) (objeto Daniela))
-   (Relacion (tipo ESPOSO) (sujeto Livio) (objeto MariCarmen))
+   (Relacion (tipo ESPOSO) (sujeto Livio) (objeto CarmenLiliana))
 )
 ;   Dualidad de relaciones
 (deffacts duales
@@ -146,49 +146,108 @@
 =>
    (printout t crlf"--- PRACTICA 1: Determinar relacion entre familiares ---" crlf)
    (printout t ">LISTA DE FAMILIARES: " crlf)
+
+   (assert (printFamM))
 )
 
 ;  Imprimir los hombres y luego las mujeres.
 (defrule printFamMale
    (declare (salience 5)) 
+   (printFamM)
    (hombre ?m)
    =>
    (printout t "> " ?m crlf)
+   (assert (printFamF))
+   
 )
 
 (defrule printFamFemale
-   (declare (salience 4)) 
+   (printFamF)
    (mujer ?m)
    =>
    (printout t "> " ?m crlf)
+   (assert (firstQuestion))
 )
 
 ;  Realizar primera pregunta.
 (defrule pregunta1
-   (declare (salience 3)) 
+   ?rule1 <- (firstQuestion)
+   ?rule2 <- (printFamM)
+   ?rule3 <- (printFamF)
 =>
 
    (printout t ">Escribir el nombre de la persona a determinar su relacion con otras:" crlf ">>")
    (assert (primerapersona (read)))
    (printout t ">RELACIONES DISPONIBLES: " crlf)
+   (retract ?rule1)
+   (retract ?rule2)
+   (retract ?rule3)
+)
+
+; Verificar que la persona esté en la base de conocimientos...
+(defrule checkPersona
+   (declare (salience 3))
+   (primerapersona ?person)
+   (or (hombre ?person) (mujer ?person))
+   =>
+   (assert (personExists))
+)
+; Si no está, volver a preguntar.
+(defrule personDoesNotExist
+   (not (personExists))
+   ?rule <- (primerapersona ?person)
+   =>
+   (printout t ">--ERROR--: " ?person " no se encuentra en la base de conocimientos. Vuelve a intentar." crlf)
+   (printout t ">LISTA DE FAMILIARES: " crlf)
+   (retract ?rule)
+   (assert (printFamM))
+)
+
+; Si está, continuar.
+(defrule personDoesExists
+   (personExists)
+   =>
+   (assert (printR))
 )
 
 ;  Imprimir relaciones disponibles.
 (defrule printRelation
    (declare (salience 2))
+   (printR)
    (femenino ?r1 ?r2)
    =>
    (printout t "> " ?r1 ", " ?r2 crlf)
+   (assert (secondQuestion))
 )
 
 ;  Solicitar la relacion de parentesco 
 (defrule pregunta2
    (declare (salience 1))
-   (primerapersona ?primero)
+   ?rule1 <- (secondQuestion)
+   ?rule2 <- (printR)
       =>
    (printout t ">Escribir una relacion de parentesco para determinar familiares que lo cumplen:" crlf ">>")
    (assert (relationship (read)))
+   (retract ?rule1)
+   (retract ?rule2)
+)
+
+;  Verificar que es una relación válida.
+(defrule isValidRelation
+   (relationship ?r)
+   (or (femenino ?r ?) (femenino ? ?r))
+   =>
    (assert (razonar))
+
+)
+;  Si no lo es, volver a preguntar...
+(defrule notValidRelation
+   (not (razonar))
+   (relationship ?r)
+   =>
+   (assert (printR))
+   (printout t ">--ERROR--: La relacion " ?r " no es valida. Intente de nuevo." crlf)
+   (printout t ">RELACIONES DISPONIBLES:" crlf)
 )
 
 ;  Obtener familiares para la relacion, se diferencian los generos. Es decir, si se escribe NIETO solamente se obtendran los nietos varones, si se escribe NIETA solo
