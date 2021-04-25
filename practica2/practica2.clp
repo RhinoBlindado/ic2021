@@ -308,14 +308,18 @@
 ; CHEQUEO DE ESTADO
 ; 1) Crear reglas para que el sistema deduzca la posición siguiente y anterior a una posición
 
+;   Regla que obtiene la posición siguiente horizontal a una ficha; es decir por la derecha.
 (defrule nextPos_h
+    ; Obtener del tablero de juego la fila y columna de un jugador.
     (Tablero Juego ?f ?c ?player)
     (test (or (eq ?player M) (eq ?player J)))
+    ; Comprobar que la columna es menor o igual a 7, es decir que está dentro del tablero.
     (test (<= (+ 1 ?c) 7))
         =>
     (assert (nextPos H ?f (+ 1 ?c) ?player))
 )
 
+;   Obtiene la posición siguiente diagonal directa por la derecha abajo.
 (defrule nextPos_d1
     (Tablero Juego ?f ?c ?player)
     (test (or (eq ?player M) (eq ?player J)))
@@ -325,6 +329,7 @@
     (assert (nextPos D1 (+ 1 ?f) (+ 1 ?c) ?player)) ; Diagonal directa
 )
 
+;   Idem por diagonal inversa derecha arriba.
 (defrule nextPos_d2
     (Tablero Juego ?f ?c ?player)
     (test (or (eq ?player M) (eq ?player J)))
@@ -334,6 +339,7 @@
     (assert (nextPos D2 (- ?f 1) (+ 1 ?c) ?player)) 
 )
 
+;   Obtiene la posición anterior, es decir, encima de una ficha.
 (defrule prevPos_v
     (Tablero Juego ?f ?c ?player)
     (test (or (eq ?player M) (eq ?player J)))
@@ -342,6 +348,7 @@
     (assert (prevPos V (- ?f 1) ?c ?player))
 )
 
+;   Regla que obtiene la posición anterior horizontal a una ficha; es decir por la izquierda.
 (defrule prevPos_h
     (Tablero Juego ?f ?c ?player)
     (test (or (eq ?player M) (eq ?player J)))
@@ -350,6 +357,7 @@
     (assert (prevPos H ?f (- ?c 1) ?player))
 )
 
+;   Obtienen los datos opuestos a sus contrapartes de nextPos.
 (defrule prevPos_d1
     (Tablero Juego ?f ?c ?player)
     (test (or (eq ?player M) (eq ?player J)))
@@ -370,17 +378,21 @@
 )
 
 ; 2) Crear reglas para que el sistema deduzca (y mantenga) donde caería una ficha si se juega en la columna c.
+;   Esta regla detecta que el fondo del tablero está vacío.
 (defrule wouldFall_empty
     (declare (salience 100))
+    ; Se realiza en el turno de la Máquina.
     (Turno M)
     (Tablero Juego 6 ?c _)
         =>
     (assert (wouldFall 6 ?c))
 )
 
+;   Esta regla detecta que una ficha caería encima de una ficha puesta por el jugador o la máquina.
 (defrule wouldFall
     (declare (salience 100))
     (Turno M)
+    ; Si la posición del espacio en blanco está por encima que la ficha y es la misma columna, disparar regla.
     (Tablero Juego ?f ?c _)
     (Tablero Juego ?f1 ?c M|J)
     (test (= (+ ?f 1) ?f1))
@@ -455,15 +467,14 @@
 (defrule threeTokensInLine_vertical
     (declare (salience 100))
     (Turno M)
-    (Tablero Juego ?f1 ?c ?player)
-    (Tablero Juego ?f2 ?c ?player)
+    ; Si hay ya dos fichas verticales y se coloca una tercera encima...
+    (twoTokens V ?player ?f1 ?c ?f2 ?c)
     (Tablero Juego ?f3 ?c ?player)
 
     ; Filtrar para que sea solo jugador o maquina.
     (test (or (eq ?player M) (eq ?player J)))
 
     ; Evaluar que existan 3 fichas en linea.
-    (test (= (+ ?f1 1) ?f2))
     (test (= (+ ?f1 2) ?f3))
         =>
     (assert (threeTokensInLine V ?player ?f1 ?c ?f3 ?c))
@@ -472,6 +483,9 @@
 (defrule threeTokensInLine_horizontal
     (declare (salience 100))
     (Turno M)
+
+    ; Se hace de esta manera porque puede suceder que _ X X o que X X _ , entonces esta regla captura esas dos posibilidades
+    ; mientras que si se realiza con twoTokens de debe realizar dos reglas diferentes.
     (Tablero Juego ?f ?c1 ?player)
     (Tablero Juego ?f ?c2 ?player)
     (Tablero Juego ?f ?c3 ?player)
@@ -489,6 +503,8 @@
 (defrule threeTokensInLine_mainDiag
     (declare (salience 100))
     (Turno M)
+
+    ; Mismo argumento que para dos fichas horizontales, se ahorra código.
     (Tablero Juego ?f1 ?c1 ?player)
     (Tablero Juego ?f2 ?c2 ?player)
     (Tablero Juego ?f3 ?c3 ?player)
@@ -527,8 +543,9 @@
 
 ; 5) Añadir reglas para que el sistema deduzca (y mantenga) que un jugador ganaría si jugase en una columna.
 (defrule canWin_v
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
+    ; Si hay tres fichas alineadas y un espacio luego... entonces puede que gane.
     (threeTokensInLine V ?player ?f1 ?c ?f3 ?c)
     (Tablero Juego ?f4 ?c _)
     (test (= (- ?f1 1) ?f4))
@@ -538,7 +555,7 @@
 )
 
 (defrule canWin_hLeft
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (threeTokensInLine H ?player ?f ?c1 ?f ?c3)
     (wouldFall ?f ?c4)
@@ -549,7 +566,7 @@
 )
 
 (defrule canWin_hRight
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (threeTokensInLine H ?player ?f ?c1 ?f ?c3)
     (wouldFall ?f ?c4)
@@ -560,13 +577,11 @@
 )
 
 (defrule canWin_separated_hRight
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (twoTokens H ?player ?f ?c1 ?f ?c2)
     (wouldFall ?f ?c3)
     (Tablero Juego ?f ?c4 ?player)
-
-    ; Filtrar para que sea solo jugador o maquina.
     (test (or (eq ?player M) (eq ?player J)))
 
     (test (= (+ ?c1 2) ?c3))
@@ -575,14 +590,15 @@
     (assert (canWin ?player ?f ?c3))
 )
 
-(defrule canWin_separated_hleft
-    (declare (salience 50))
+;   Si hay dos fichas, un espacio y otra ficha: también puede ganar.
+(defrule canWin_separated_hLeft
+    (declare (salience 90))
     (Turno M)
+
     (Tablero Juego ?f ?c1 ?player)
     (wouldFall ?f ?c2)
     (twoTokens H ?player ?f ?c3 ?f ?c4)
 
-    ; Filtrar para que sea solo jugador o maquina.
     (test (or (eq ?player M) (eq ?player J)))
 
     (test (= (+ ?c1 1) ?c2))
@@ -591,8 +607,9 @@
     (assert (canWin ?player ?f ?c2))
 )
 
+;   Diagonales por cada extremo.
 (defrule canWin_mainDiagRight
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (threeTokensInLine D1 ?player ?f1 ?c1 ?f3 ?c3)
     (wouldFall ?f4 ?c4)
@@ -604,7 +621,7 @@
 )
 
 (defrule canWin_mainDiagLeft
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (threeTokensInLine D1 ?player ?f1 ?c1 ?f3 ?c3)
     (wouldFall ?f4 ?c4)
@@ -616,24 +633,24 @@
 )
 
 (defrule canWin_invDiagRight
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (threeTokensInLine D2 ?player ?f1 ?c1 ?f3 ?c3)
     (wouldFall ?f4 ?c4)
-    (test (= (+ ?c3 1) ?c4))
-    (test (= (- ?f3 1) ?f4))
+    (test (= (+ ?c1 1) ?c4))
+    (test (= (- ?f1 1) ?f4))
     (test (or (eq ?player M) (eq ?player J)))
         =>
     (assert (canWin ?player ?c4))
 )
 
 (defrule canWin_invDiagLeft
-    (declare (salience 50))
+    (declare (salience 90))
     (Turno M)
     (threeTokensInLine D2 ?player ?f1 ?c1 ?f3 ?c3)
     (wouldFall ?f4 ?c4)
-    (test (= (- ?c1 1) ?c4))
-    (test (= (+ ?f1 1) ?f4))
+    (test (= (- ?c3 1) ?c4))
+    (test (= (+ ?f3 1) ?f4))
     (test (or (eq ?player M) (eq ?player J)))
         =>
     (assert (canWin ?player ?c4))
@@ -642,19 +659,22 @@
 
 ; REGLAS BASADAS EN MI CONOCIMIENTO
 
-;   Mi Conocimiento:
-;       Nunca he jugado a este juego antes, por lo tanto mi estrategia personal es ir estar a la defensiva e intentar evitar que
-;       mi contrincante avance mientras que tambien dentro de lo posible intento tambien ir haciendo yo un 4 en raya.
+; Mi Conocimiento:
+; - Nunca he jugado a este juego antes, por lo tanto mi estrategia personal es ir estar a la defensiva e intentar evitar que
+;   mi contrincante avance mientras que tambien dentro de lo posible intento tambien ir haciendo yo un 4 en raya.
 
-;   Reglas Defensivas:
-;   Si detecta que el contrincante ha colocado dos piezas juntas y tiene un hueco de un lado, insertar una pieza.
+; Reglas Defensivas:
+; - Si detecta que el contrincante ha colocado dos piezas juntas y tiene un hueco de un lado, insertar una pieza.
 
 ;   Si hay dos fichas del jugador en horizontal y en la siguiente columna puedo meter una ficha, lo hago.
 (defrule defend_h_r
-    (declare (salience 20))
+    (declare (salience 30))
     ?turn <- (Turno M)
+    ; Si hay dos fichas horizontales en la fila f
     (twoTokens H J ?f ?c1 ?f ?c2)
+    ; Y caería una ficha en la fila f, columna c3
     ?rule <- (wouldFall ?f ?c3)
+    ; Si c3=c2+1 entonces hay hueco por la derehca, puedo colocarla.
     (test (= (+ ?c2 1) ?c3))
        =>
     (printout t "Juego de manera defensiva horizontal derecha en la columna " ?c3 crlf)
@@ -665,7 +685,7 @@
 
 ;   Idem por el otro lado.
 (defrule defend_h_l
-    (declare (salience 20))
+    (declare (salience 30))
     ?turn <- (Turno M)
     (twoTokens H J ?f ?c1 ?f ?c2)
     ?rule <- (wouldFall ?f ?c3)
@@ -679,7 +699,7 @@
 
 ;   Si hay dos fichas puestas verticalmente y puedo colocar yo una ficha encima, lo hago.
 (defrule defend_v
-    (declare (salience 20))
+    (declare (salience 30))
     ?turn <- (Turno M)
     (twoTokens V J ?f1 ?c ?f ?c)
     ?rule <- (wouldFall ?f3 ?c)
@@ -693,7 +713,7 @@
 
 ;   Si hay dos fichas en diagonal y puedo colocar una tercera para trancar la jugada, lo hago.
 (defrule defend_d1_top
-    (declare (salience 20))
+    (declare (salience 25))
     ?turn <- (Turno M)
     (twoTokens D1 J ?f1 ?c1 ?f2 ?c2)
     ?rule <- (wouldFall ?f3 ?c3)
@@ -708,7 +728,7 @@
 
 ;   Idem.
 (defrule defend_d1_bottom
-    (declare (salience 20))
+    (declare (salience 25))
     ?turn <- (Turno M)
     (twoTokens D1 J ?f1 ?c1 ?f2 ?c2)
     ?rule <- (wouldFall ?f3 ?c3)
@@ -723,7 +743,7 @@
 
 ;   Idem.
 (defrule defend_d2_top
-    (declare (salience 20))
+    (declare (salience 25))
     ?turn <- (Turno M)
     (twoTokens D2 J ?f1 ?c1 ?f2 ?c2)
     ?rule <- (wouldFall ?f3 ?c3)
@@ -738,7 +758,7 @@
 
 ;   Idem.
 (defrule defend_d2_bottom
-    (declare (salience 20))
+    (declare (salience 25))
     ?turn <- (Turno M)
     (twoTokens D2 J ?f1 ?c1 ?f2 ?c2)
     ?rule <- (wouldFall ?f3 ?c3)
@@ -753,13 +773,15 @@
 
 
 ; Reglas Ofensivas:
-; Si no hay movimientos que pongan en peligro la partida, intentar realizar un 4 en raya.
+; - Si no hay movimientos que pongan en peligro la partida, intentar realizar un 4 en raya.
 
-;       Movimientos con una ficha ya en el tablero.
+;   Movimientos con una ficha ya en el tablero.
 (defrule make1stMove_hRight
     (declare (salience 10))
     ?turn <- (Turno M)
+    ; La posición siguiente (derecha) a una ficha que ha puesto la máquina.
     (nextPos H ?f ?c M)
+    ; Y es una posición válida...
     (wouldFall ?f ?c)
     =>
     (printout t "Juego de manera ofensiva horizontal por la derecha en la columna " ?c crlf)
@@ -767,6 +789,7 @@
     (assert (Juega M ?c))
 )
 
+;   Idem por la izquierda.
 (defrule make1stMove_hLeft
     (declare (salience 10))
     ?turn <- (Turno M)
@@ -778,6 +801,7 @@
     (assert (Juega M ?c))
 )
 
+;   Idem
 (defrule make1stMove_vertical
     (declare (salience 10))
     ?turn <- (Turno M)
@@ -789,9 +813,55 @@
     (assert (Juega M ?c))
 )
 
+
+(defrule make1stMove_mainDiagRight
+    (declare (salience 10))
+    ?turn <- (Turno M)
+    (nextPos D1 ?f ?c M)
+    (wouldFall ?f ?c)
+    =>
+    (printout t "Juego de manera ofensiva diagonal en la columna " ?c crlf)
+    (retract ?turn)
+    (assert (Juega M ?c))
+)
+
+(defrule make1stMove_mainDiagLeft
+    (declare (salience 10))
+    ?turn <- (Turno M)
+    (prevPos D1 ?f ?c M)
+    (wouldFall ?f ?c)
+    =>
+    (printout t "Juego de manera ofensiva diagonal en la columna " ?c crlf)
+    (retract ?turn)
+    (assert (Juega M ?c))
+)
+
+(defrule make1stMove_invDiagRight
+    (declare (salience 10))
+    ?turn <- (Turno M)
+    (nextPos D2 ?f ?c M)
+    (wouldFall ?f ?c)
+    =>
+    (printout t "Juego de manera ofensiva diagonal en la columna " ?c crlf)
+    (retract ?turn)
+    (assert (Juega M ?c))
+)
+
+(defrule make1stMove_invDiagLeft
+    (declare (salience 10))
+    ?turn <- (Turno M)
+    (prevPos D2 ?f ?c M)
+    (wouldFall ?f ?c)
+    =>
+    (printout t "Juego de manera ofensiva diagonal en la columna " ?c crlf)
+    (retract ?turn)
+    (assert (Juega M ?c))
+)
+
+
 ;       Movimientos con dos fichas seguidas en el tablero
 (defrule make2ndMove_hLeft
-    (declare (salience 10))
+    (declare (salience 20))
     ?turn <- (Turno M)
     (twoTokens H M ?f ?c1 ?f ?c2)
     (wouldFall ?f ?c)
@@ -803,7 +873,7 @@
 )
 
 (defrule make2ndMove_hRight
-    (declare (salience 10))
+    (declare (salience 20))
     ?turn <- (Turno M)
     (twoTokens H M ?f ?c1 ?f ?c2)
     (wouldFall ?f ?c)
@@ -815,7 +885,7 @@
 )
 
 (defrule make2ndMove_vertical
-    (declare (salience 10))
+    (declare (salience 20))
     ?turn <- (Turno M)
     (twoTokens V M ?f1 ?c ?f2 ?c)
     (wouldFall ?f3 ?c)
@@ -827,7 +897,7 @@
 )
 
 (defrule make2ndMove_d1_top
-    (declare (salience 10))
+    (declare (salience 20))
     ?turn <- (Turno M)
     (twoTokens D1 M ?f1 ?c1 ?f2 ?c2)
     ?rule <- (wouldFall ?f3 ?c3)
@@ -841,7 +911,7 @@
 )
 
 (defrule make2ndMove_d1_bottom
-    (declare (salience 10))
+    (declare (salience 20))
     ?turn <- (Turno M)
     (twoTokens D1 M ?f1 ?c1 ?f2 ?c2)
     ?rule <- (wouldFall ?f3 ?c3)
@@ -884,7 +954,7 @@
 
 ;       Si el bot detecta que puede realizar una jugada ganadora, tiene prioridad sobre el resto de reglas.
 (defrule tryToWin
-    (declare (salience 45))
+    (declare (salience 85))
     ?turn <- (Turno M)
     (canWin M ?c)
         =>

@@ -1,6 +1,16 @@
-; PRACTICA 1: Ejercicio de la Introducción a los sistemas basados en reglas
-; Autor: Valentino Lugli - Marzo 2021
+; [CASTELLANO]
+; Practica 1: Ejercicio de la Introducción a los sistemas basados en reglas
+; Asignatura: Ingenieria del Conocimiento
+; Autor: Valentino Lugli (Github: @RhinoBlindado)
+; Fecha: Marzo, Abril 2021
 
+; [ENGLISH]
+; Practice 1: Introductory exercise to Rule Based Systems.
+; Course: Knowledge Engineering
+; Author: Valentino Lugli (Github: @RhinoBlindado)
+; Date: March, April 2021
+
+; Nota: Se adjunta el fichero "arbolGenealogico.png" que muestra el árbol genealógico que se ha utilizado para esta práctica
 
 ; DEFINICION HECHOS
 ;  Listado familiar
