@@ -26,6 +26,7 @@
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_mencionEn_mencion">
         <owl:inverseOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#mencion_esTenida_alumno"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     </owl:ObjectProperty>
     
 
@@ -34,6 +35,16 @@
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_tiene_asignatura">
         <owl:inverseOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura_esTenida_alumno"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura_esDe_Departamento -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura_esDe_Departamento">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Asignatura"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Departamento"/>
     </owl:ObjectProperty>
     
 
@@ -56,6 +67,7 @@
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura_perteneceA_curso">
         <owl:inverseOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#curso_tiene_asignatura"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     </owl:ObjectProperty>
     
 
@@ -88,9 +100,22 @@
     
 
 
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor_esDe_Departamento -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor_esDe_Departamento">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Profesor"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Departamento"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor_imparte_asignatura -->
 
-    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor_imparte_asignatura"/>
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor_imparte_asignatura">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Profesor"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Asignatura"/>
+    </owl:ObjectProperty>
     
 
 
@@ -120,8 +145,18 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Gusto -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Gusto">
+        <owl:equivalentProperty rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Preferencia"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Alumno"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Preferencia -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Preferencia">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
     </owl:DatatypeProperty>
     
 
@@ -129,6 +164,7 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Promedio -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Promedio">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Alumno"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
     </owl:DatatypeProperty>
@@ -140,15 +176,6 @@
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#aprobada_NotaFinal">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Aprobada"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura_Departamento -->
-
-    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura_Departamento">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Asignatura"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
     
 
@@ -183,7 +210,17 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#curso_ID -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#curso_ID">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Curso"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento_nombre -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento_nombre">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Departamento"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
     
@@ -192,6 +229,8 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_Apellido -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_Apellido">
+        <rdfs:subPropertyOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_identidad"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Persona"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
@@ -201,6 +240,7 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_DNI -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_DNI">
+        <rdfs:subPropertyOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_identidad"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Persona"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
@@ -210,9 +250,16 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_Nombre -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_Nombre">
+        <rdfs:subPropertyOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_identidad"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Persona"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_identidad -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#persona_identidad"/>
     
 
 
@@ -287,9 +334,41 @@
     
 
 
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#AsignaturaAprobada -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#AsignaturaAprobada">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#aprobada_NotaFinal"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Curso -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Curso"/>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Departamento -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Departamento"/>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#EstudianteDeIA -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#EstudianteDeIA">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno_Gusto"/>
+                <owl:hasValue>IA</owl:hasValue>
+            </owl:Restriction>
+        </owl:equivalentClass>
+    </owl:Class>
     
 
 
@@ -303,6 +382,19 @@
 
     <owl:Class rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Profesor">
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#Persona"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#ProfesorDECSAI -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#ProfesorDECSAI">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor_esDe_Departamento"/>
+                <owl:hasValue rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento1"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
     </owl:Class>
     
 
@@ -335,6 +427,7 @@
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#alumno1">
         <alumno_tiene_asignatura rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura1"/>
         <alumno_tiene_asignatura rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura2"/>
+        <alumno_Gusto rdf:datatype="http://www.w3.org/2001/XMLSchema#string">IA</alumno_Gusto>
         <alumno_Promedio rdf:datatype="http://www.w3.org/2001/XMLSchema#float">8.0</alumno_Promedio>
         <persona_Apellido rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Lugli</persona_Apellido>
         <persona_DNI rdf:datatype="http://www.w3.org/2001/XMLSchema#string">YB0819879</persona_DNI>
@@ -346,7 +439,7 @@
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura1 -->
 
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura1">
-        <asignatura_Departamento rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DECSAI</asignatura_Departamento>
+        <asignatura_esDe_Departamento rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento1"/>
         <asignatura_Dificultad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Media</asignatura_Dificultad>
         <asignatura_Nombre rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ingenieria del Conocimiento</asignatura_Nombre>
     </owl:NamedIndividual>
@@ -357,7 +450,6 @@
 
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#asignatura2">
         <aprobada_NotaFinal rdf:datatype="http://www.w3.org/2001/XMLSchema#float">9.2</aprobada_NotaFinal>
-        <asignatura_Departamento rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DECSAI</asignatura_Departamento>
         <asignatura_Dificultad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</asignatura_Dificultad>
         <asignatura_Nombre rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Fundamentos de Base de Datos</asignatura_Nombre>
     </owl:NamedIndividual>
@@ -373,6 +465,14 @@
     
 
 
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento1">
+        <departamento_nombre rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DECSAI</departamento_nombre>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor1 -->
 
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor1">
@@ -380,6 +480,15 @@
         <persona_Nombre rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Elijah</persona_Nombre>
         <profesor_Exigencia rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</profesor_Exigencia>
         <profesor_NRP rdf:datatype="http://www.w3.org/2001/XMLSchema#string">2005ACMILES</profesor_NRP>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#profesor2">
+        <profesor_esDe_Departamento rdf:resource="http://www.semanticweb.org/valen/ontologies/2021/4/practica4_2#departamento1"/>
+        <persona_Nombre rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Altair</persona_Nombre>
     </owl:NamedIndividual>
     
 
