@@ -1,3 +1,22 @@
+; [CASTELLANO]
+; Practica 5.4: Redes Bayesiana
+; Asignatura: Ingenieria del Conocimiento
+; Autor: Valentino Lugli (Github: @RhinoBlindado)
+; Fecha: Mayo, Junio 2021
+
+; [ENGLISH]
+; Practice 5.3: Bayesian Networks
+; Course: Knowledge Engineering
+; Author: Valentino Lugli (Github: @RhinoBlindado)
+; Date: May, June 2021
+
+; ##########################
+; # EJERCICIO
+; ##########################
+
+;   - Modificar el ejemplo de integración de razonamiento probabilístico en CLIPS para desarrollar un SE en CLIPS 
+;     que sea capaz de responder a las preguntas de la tarea del ejercicio sobre razonamiento con probabilidades.
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;   RAZONAMIENTO BAYESIANO   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;  EJEMPLO DE SISTEMA CON DOS VARIABLES QUE INFLUYEN Y DOS EFECTOS;;;;;
@@ -6,54 +25,57 @@
 
 
 (deffacts relaciones_causa_efecto
-(influye  zona_origen covid)  ; zona de origen influye en la probabilidad de Padulismo
-(influye  vacuna covid)    ; inminidad influye en la probabilidad de Padulismo
-(efecto fiebre covid)    ; tos es un efecto o síntoma común de Padulismo
-(efecto tos covid)         ; fiebre es un efecto o síntoma común de Padulismo
+  (influye  zona_origen covid)    ; Zona de origen influye en la probabilidad de COVID
+  (influye  vacuna covid)         ; El estar vacunado influye en la probabilidad del COVID  
+  (efecto fiebre covid)           ; Tener fiebre es un efecto o síntoma común del COVID
+  (efecto tos covid)              ; Tener tos es un efecto o síntoma común del COVID
+  (efecto pcr covid)              ; Se le realiza un test a los afectados por COVID
 )
 
 (deffacts probabilidad_variables_que_influyen
-(prob zona_origen alto_riesgo 0.7)
-(prob zona_origen medio_riesgo 0.2)
-(prob zona_origen bajo_riesgo 0.1)
-(prob vacuna si 0.2)
-(prob vacuna no 0.8)
+  (prob zona_origen alto_riesgo 0.7)
+  (prob zona_origen medio_riesgo 0.2)
+  (prob zona_origen bajo_riesgo 0.1)
+  (prob vacuna si 0.2)
+  (prob vacuna no 0.8)
 )
 
 (deffacts distribucion_segun_valores_variables_que_influyen
-(probcond2 covid SI zona_origen alto_riesgo vacuna si 0.002)
-(probcond2 covid SI zona_origen alto_riesgo vacuna no 0.045)
-(probcond2 covid SI zona_origen medio_riesgo vacuna si 0.0015)
-(probcond2 covid SI zona_origen medio_riesgo vacuna no 0.03)
-(probcond2 covid SI zona_origen bajo_riesgo vacuna si 0.0002)
-(probcond2 covid SI zona_origen bajo_riesgo vacuna no 0.009)
+  (probcond2 covid SI zona_origen alto_riesgo vacuna si 0.002)
+  (probcond2 covid SI zona_origen alto_riesgo vacuna no 0.045)
+  (probcond2 covid SI zona_origen medio_riesgo vacuna si 0.0015)
+  (probcond2 covid SI zona_origen medio_riesgo vacuna no 0.03)
+  (probcond2 covid SI zona_origen bajo_riesgo vacuna si 0.0002)
+  (probcond2 covid SI zona_origen bajo_riesgo vacuna no 0.009)
 )
 
 (deffacts probabilidad_efectos
-(probcond tos si covid SI 0.09)
-(probcond tos si covid NO 0.3)
-(probcond fiebre alta covid SI 0.004)
-(probcond fiebre alta covid NO 0.0025)
-(probcond fiebre media covid SI 0.02)
-(probcond fiebre media covid NO 0.009)
-(probcond fiebre no covid SI 0.04)
-(probcond fiebre no covid NO 0.1)
+  (probcond tos si covid SI 0.09)
+  (probcond tos si covid NO 0.3)
+  (probcond fiebre alta covid SI 0.004)
+  (probcond fiebre alta covid NO 0.0025)
+  (probcond fiebre media covid SI 0.02)
+  (probcond fiebre media covid NO 0.009)
+  (probcond fiebre no covid SI 0.04)
+  (probcond fiebre no covid NO 0.1)
+  (probcond pcr si covid SI 0.9)
+  (probcond pcr no covid NO 0.99)
 )
 ; Inicializamos valores para calculos a partir de probcond2
 (deffacts inicializacion_probabilidades
-(probconj2 covid SI zona_origen alto_riesgo 0)
-(probconj2 covid SI zona_origen medio_riesgo 0)
-(probconj2 covid SI zona_origen bajo_riesgo 0)
-(probconj2 covid SI vacuna si 0)
-(probconj2 covid SI vacuna no 0)
-(prob covid SI 0)
+  (probconj2 covid SI zona_origen alto_riesgo 0)
+  (probconj2 covid SI zona_origen medio_riesgo 0)
+  (probconj2 covid SI zona_origen bajo_riesgo 0)
+  (probconj2 covid SI vacuna si 0)
+  (probconj2 covid SI vacuna no 0)
+  (prob covid SI 0)
 )
 
 (defrule inicio
-=>
-(printout t "Este es un sistema para decidir si usted padece covid" crlf)
-(assert (informar datos))
-(printout t crlf crlf "DATOS: Los datos estadísticos de que dispongo son:" crlf)
+    =>
+  (printout t "Este es un sistema para decidir si usted padece covid" crlf)
+  (assert (informar datos))
+  (printout t crlf crlf "DATOS: Los datos estadísticos de que dispongo son:" crlf)
 )
 
 ;;;; MODULO INFORMAR DATOS ;;;;
@@ -304,32 +326,34 @@
 
 
 (defrule preguntar_zona_origen
-(red causal causas)
-=>
-(printout t "Escribe una opcion: La zona de origen es de riesgo (1=alto 2=medio 3=bajo 4=Desconocido): " )
-(bind ?respuesta (read))
-(if (= ?respuesta 1) then (assert (valor zona_origen alto_riesgo))
-  else (if (= ?respuesta 2) then (assert (valor zona_origen medio_riesgo))
-    else (if (= ?respuesta 3) then (assert (valor zona_origen bajo_riesgo))
-	 else (assert (valor zona_origen Desconocido)))))
-(printout t crlf)	 
+  (red causal causas)
+    =>
+  (printout t crlf crlf"--- Practica 5.4: Redes Bayesianas ---" crlf)
+  (printout t crlf ">>Probabilidad que alguien tenga COVID. ")
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Que riesgo tiene la zona de residencia?" crlf">>(1 - Alto | 2 - Medio | 3 - Bajo | 4 - Desconocido)" crlf ">")
+  (bind ?respuesta (read))
+  (if (= ?respuesta 1) then (assert (valor zona_origen alto_riesgo))
+    else (if (= ?respuesta 2) then (assert (valor zona_origen medio_riesgo))
+      else (if (= ?respuesta 3) then (assert (valor zona_origen bajo_riesgo))
+    else (assert (valor zona_origen Desconocido)))))
+  (printout t crlf)	 
 )
 
 (defrule preguntar_vacuna
-(red causal causas)
-=>
-(printout t "Escribe una opcion: estas vacunado? (1=si 2=no 3=Desconocido): " )
-(bind ?respuesta (read))
-(if (= ?respuesta 1) then (assert (valor vacuna si))
-  else (if (= ?respuesta 2) then (assert (valor vacuna no))
-	 else (assert (valor vacuna Desconocido))))
-(printout t crlf)
+  (red causal causas)
+    =>
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Esta vacunado el paciente? "crlf">>(1 - Si | 2 - No | 3 - Desconocido)" crlf ">")
+  (bind ?respuesta (read))
+  (if (= ?respuesta 1) then (assert (valor vacuna si))
+    else (if (= ?respuesta 2) then (assert (valor vacuna no))
+    else (assert (valor vacuna Desconocido))))
+  (printout t crlf)
 )
 
 (defrule preguntar_fiebre
   (red causal efectos)
     =>
-  (printout t "Ha tenido fiebre (1=alta 2=media 3=no 4=desconocido): " )
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Ha tenido fiebre?" crlf ">>(1 - Alta | 2 - Media | 3 - No | 4 - Desconocido)" crlf ">")
   (bind ?respuesta (read))
   (if (= ?respuesta 1) then 
         (assert (valor fiebre alta))
@@ -344,14 +368,23 @@
 )
 
 (defrule preguntar_tos
-(red causal efectos)
-=>
-(printout t "Tiene tos(1=si 2=no 3=Desconocido): " )
-(bind ?respuesta (read))
-(if (= ?respuesta 1) then (assert (valor tos si))
-  else (if (= ?respuesta 2) then (assert (valor tos no))
-	 else (assert (valor tos Desconocido))))
-(printout t crlf)
+  (red causal efectos)
+    =>
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Ha tenido tos?" crlf ">>(1 - Si | 2 - No | 3 - Desconocido)" crlf ">")
+  (bind ?respuesta (read))
+  (if (= ?respuesta 1) then (assert (valor tos si))
+    else (if (= ?respuesta 2) then (assert (valor tos no))
+    else (assert (valor tos Desconocido))))
+  (printout t crlf)
 )
 
-
+(defrule preguntar_pcr
+  (red causal efectos)
+    =>
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Si se ha realizado el PCR, te ha dado positivo? (1 - Si | 2 - No | 3 - No se ha realizado el test)" crlf ">")
+  (bind ?respuesta (read))
+  (if (= ?respuesta 1) then (assert (valor pcr si))
+    else (if (= ?respuesta 2) then (assert (valor pcr no))
+    else (assert (valor pcr Desconocido))))
+  (printout t crlf)
+)

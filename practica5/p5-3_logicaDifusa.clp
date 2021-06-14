@@ -1,9 +1,30 @@
+; [CASTELLANO]
+; Practica 5.3: Logica Difusa
+; Asignatura: Ingenieria del Conocimiento
+; Autor: Valentino Lugli (Github: @RhinoBlindado)
+; Fecha: Mayo, Junio 2021
+
+; [ENGLISH]
+; Practice 5.3: Fuzzy Logic
+; Course: Knowledge Engineering
+; Author: Valentino Lugli (Github: @RhinoBlindado)
+; Date: May, June 2021
+
+; ##########################
+; # EJERCICIO
+; ##########################
+
+; - Modificar Ejemplo de Razonamiento Difuso con CLISP en el siguiente sentido:
+; a) cambiando algunas de las funciones de pertenencia de las variables de entrada
+; b) añadiendo una variable de entrada nueva (por ejemplo la edad)
+; c) Añadiendo una nueva regla que también utilice esa variable de entrada. 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;   Modulo ejecutar sistema difuso con varias variables de entrada   ;;;;;;;
 ;;;;;       MODULO CALCULO FUZZY (modulo calculo_fuzzy)      ;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;  Copywright Juan Luis Castro  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;; FUNCIONES NECESARIAS  ;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -61,23 +82,35 @@
 
 ;;  Definimos los conjuntos difusos que usará el sistema
 
+; ##########################
+; # EJERCICIO
+; ##########################
+
+;   a) cambiando algunas de las funciones de pertenencia de las variables de entrada
+
 (deffacts conjuntos_difusos
-(cd temperatura normal 36 36 37 37.2)   ; entre 36 y 37
+(cd temperatura normal 35.5 36 37 37.2)         ; entre 36 y 37, Modificada
 (cd temperatura destemplada 37 37.5 37.8 38)  ; aproximadamente entre 37.5 y 37.8
-(cd temperatura alta 37.8 38.5 100 100)  ; aproximadamente mas 38.5
-(cd peso bajo 0 0 50 60)     ; aproximadamente  menos de 50
-(cd peso medio 55 62 70 75)  ; aproximadamente entre 62 y 70
-(cd peso alto 70 80 300 300) ; aproximadamente mas de 80
+(cd temperatura alta 38.8 39 100 100)         ; aproximadamente mas 38.5, Modificada
+(cd peso bajo 0 0 50 60)                      ; aproximadamente menos de 50
+(cd peso medio 55 62 70 80)                   ; aproximadamente entre 62 y 80, Modificada
+(cd peso alto 70 80 300 300)                  ; aproximadamente mas de 80
 (cd dosis cero 0 0 0 0)
-(cd dosis baja 4 5 5 6.5)    ; aproximadamente 5
-(cd dosis media 6 6.5 7.5 8)  ; aproximadamente 7
-(cd dosis alta 8 9 9 10)     ; aprximadamente 9
-(cd edad peque 0 0 8 18)
-(cd edad joven 15 18 30 40)
+(cd dosis baja 4 5 5 6.5)                     ; aproximadamente 5
+(cd dosis media 6 7 7 8)                      ; aproximadamente 7             
+(cd dosis alta 8 9 9 10)                      ; aproximadamente menos de 18, Añadida
+(cd edad peque 0 0 8 18)                      ; aproximadamente entre 18 y 40, Añadida
+(cd edad joven 15 18 30 40)                   ; aproximadamente mas de 40, Añadida
 (cd edad mayor 35 45 100 100)
 )
 
 ;; Definimos las reglas y las explicaciones asociadas
+
+; ##########################
+; # EJERCICIO
+; ##########################
+
+; c) Añadiendo una nueva regla que también utilice esa variable de entrada. 
 
 (deffacts reglas
 (regla 1 antecedente temperatura normal)
@@ -87,12 +120,12 @@
 (regla 2 antecedente peso medio)
 (regla 2 antecedente edad joven)
 (regla 2 consecuente dosis media)
-(regla 2 explicacion "Si esta destemplado, el peso es medio y es joven entonces la dosis a aplicar es media")
+(regla 2 explicacion "Si esta destemplado, el peso es medio y es joven entonces la dosis a aplicar es media") ; Regla modificada
 (regla 2bis antecedente temperatura destemplada)
 (regla 2bis antecedente peso alto)
 (regla 2bis antecedente edad peque)
 (regla 2bis consecuente dosis alta)
-(regla 2bis explicacion "Si esta destemplado, el peso es alto y es un peque, la dosis a aplicar es alta")
+(regla 2bis explicacion "Si esta destemplado, el peso es alto y es un peque, la dosis a aplicar es alta") ; Regla modificada
 (regla 3 antecedente temperatura destemplada)
 (regla 3 antecedente peso bajo)
 (regla 3 antecedente edad mayor)
@@ -105,7 +138,7 @@
 (regla 5 antecedente peso bajo)
 (regla 5 antecedente edad joven)
 (regla 5 consecuente dosis media)
-(regla 5 explicacion "Si la temperatura es alta, el peso es bajo y es joven, la dosis es media")
+(regla 5 explicacion "Si la temperatura es alta, el peso es bajo y es joven, la dosis es media") ; Regla añadida
 )
 
 
@@ -119,7 +152,7 @@
 =>
 (bind ?g (membership ?x ?a ?b ?c ?d))
 (assert (fuzzy cumplimiento ?v ?l ?g))
-(if (> ?g 0) then (printout t ?v " es " ?l " en grado " ?g crlf))
+(if (> ?g 0) then (printout t ">>"?v " es " ?l " en grado " ?g crlf))
 )
 
 
@@ -170,7 +203,7 @@
 (regla ?r explicacion ?text)
 =>
 (assert (fuzzy inferido ?v ?l ?g1))
-(printout t "Se va a aplicar la regla " ?text  crlf)
+(printout t ">>Se va a aplicar la regla " ?text  crlf)
 )
 
 
@@ -214,7 +247,7 @@
 (test (> ?d 0))
 =>
 (assert (fuzzy valor_inferido ?v (/ ?n ?d)))
-(printout t "Aplicando esta(s) regla(s) el valor de " ?v " es " (/ ?n ?d)  crlf)
+(printout t ">>Aplicando esta(s) regla(s) el valor de " ?v " es " (/ ?n ?d)  crlf)
 )
 
 
@@ -273,21 +306,30 @@
 (defrule pregunta1
   (declare (salience 1)) 
     =>
-  (printout t "Temperatura: ")
+  (printout t crlf crlf"--- Practica 5.3: Logica Difusa ---" crlf)
+  (printout t crlf ">>Estas enfermo. ")
+  (printout t crlf "--- PREGUNTA ---" crlf  ">>Cual es tu temperatura? " crlf ">")
   (assert (dato temperatura (read)))
 ) 
 
 (defrule pregunta2 
   (declare (salience 1)) 
     =>
-  (printout t "Peso: ")
+  (printout t crlf "--- PREGUNTA ---" crlf  ">>Cual es tu peso? " crlf ">")
   (assert (dato peso (read)))
 )
+
+
+; ##########################
+; # EJERCICIO
+; ##########################
+
+;   b) añadiendo una variable de entrada nueva (por ejemplo la edad)
 
 (defrule pregunta3
   (declare (salience 1))
   =>
-  (printout t "Edad: ")
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Cual es tu edad? " crlf ">")
   (assert (dato edad (read)))
   (assert (modulo calculo_fuzzy))
 )

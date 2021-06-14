@@ -18,7 +18,10 @@
 ;                "?x vuela si|no con esa certeza"
 
 
-;     * HECHOS *
+; ##########################
+; # HECHOS
+; ##########################
+
 ; Las aves y los mamíferos son animales
 ;Los gorriones, las palomas, las águilas y los pingüinos son aves
 ;La vaca, los perros y los caballos son mamíferos
@@ -34,7 +37,10 @@
     (vuela pinguino no seguro) 
 )
 
-;     * REGLAS *
+; ##########################
+; # REGLAS
+; ##########################
+
 ; Las aves son animales
 (defrule aves_son_animales
     (ave ?x)
@@ -92,18 +98,29 @@
     (assert (explicacion vuela ?x ?expl)) 
 )
 
+
+; ##########################
+; # EJERCICIO
+; ##########################
+
+;   Completar esta base de conocimiento para que el sistema pregunte 
+;   que de qué animal esta interesado en obtener información sobre si
+;   vuela y:
+
 (defrule startUp
     (declare (salience -10))
         =>
     (printout t crlf crlf"--- Practica 5.1: Reglas por Defecto ---" crlf)
-    (printout t crlf ">>Escribe el nombre de un animal para saber si vuela o no." crlf ">")
+    (printout t crlf "--- PREGUNTA ---" crlf ">>Escribe el nombre de un animal para saber si vuela o no." crlf ">")
     (assert (inputAnimal ( lowcase(read) ) ) )
 )
 
-
+;   -   Si es uno de los recogidos en el conocimiento indique si vuela o no
 (defrule checkAnimal
+    ; El animal que se ha introducido está en la base de conocimientos.
     (inputAnimal ?specimen)
     (animal ?specimen)
+    ; Se toman las explicaciones y se imprimen en pantalla.
     (explicacion animal ?specimen ?expl1)
     (explicacion vuela|retracta_vuela ?specimen ?expl2)
     =>
@@ -112,8 +129,10 @@
 )
 
 (defrule checkAnimal_2
+    ; Cuando se ha introducido un nuevo animal que no es mamifero o ave, se dispara esta regla.
     (inputAnimal ?specimen)
     (animal ?specimen)
+    ; No posee la explicación del animal pero si la de que si vuela o no.
     (not(explicacion animal ?specimen ?expl1))
     (explicacion vuela|retracta_vuela ?specimen ?expl2)
     =>
@@ -121,6 +140,8 @@
     (assert (animalIsKnown))
 )
 
+;   -  Si no es uno de los recogidos pregunte si es un ave o un mamífero y según la respuesta indique si vuela o no.
+;   -  Si no se sabe si es un mamífero o un ave también responda según el razonamiento por defecto indicado.
 (defrule askAnimal_notKnown
     (not(animalIsKnown))
     (inputAnimal ?specimen)
@@ -134,6 +155,7 @@
     (inputAnimalType ?type)
     (inputAnimal ?specimen)
     =>
+    ; Dependiendo de la entrada, se indica que el animal es un mamífero, un ave o que es otra clase de animal.
     (if (eq ?type mamifero) then
         (assert (mamifero ?specimen))
         else (if (eq ?type ave) then
