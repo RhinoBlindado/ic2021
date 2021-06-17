@@ -381,7 +381,7 @@
 (defrule preguntar_pcr
   (red causal efectos)
     =>
-  (printout t crlf "--- PREGUNTA ---" crlf ">>Si se ha realizado el PCR, te ha dado positivo? (1 - Si | 2 - No | 3 - No se ha realizado el test)" crlf ">")
+  (printout t crlf "--- PREGUNTA ---" crlf ">>Si se ha realizado el PCR, ha dado positivo? (1 - Si | 2 - No | 3 - No se ha realizado el test)" crlf ">")
   (bind ?respuesta (read))
   (if (= ?respuesta 1) then (assert (valor pcr si))
     else (if (= ?respuesta 2) then (assert (valor pcr no))
