@@ -404,27 +404,20 @@
     (cd work low 0 0 1 1.75)         ; ''              3 o menos horas diarias de trabajo.
 
     ; Practica
-    (cd practice high 6.5 7.25 999 999)      
-    (cd practice mid 2.5 3.25 6.5 7.5)
-    (cd practice low 0 0 2.5 3.5)
+    (cd practice high 6.5 7.25 999 999)   ; Aproximadamente 7 o más de gusto por prácticas de 10.
+    (cd practice mid 2.5 3.25 6.5 7.5)    ; Aproximadamente entre 3 y 7 de gusto por prácticas de 10.
+    (cd practice low 0 0 2.5 3.5)         ; Aproximadamente entre 0 y 3 de gusto por prácticas de 10.
     
     ; Teoría
-    (cd theory high 6.5 7.25 999 999)      
+    (cd theory high 6.5 7.25 999 999)     ;Ídem para teoría.
     (cd theory mid 2.5 3.25 6.5 7.5)
     (cd theory low 0 0 2.5 3.5)
 
     ; Evaluación
-    (cd typeEval cont 6.5 7.25 999 999)      
-    (cd typeEval neutral 2.5 3.25 6.5 7.5)
-    (cd typeEval final 0 0 2.5 3.5)
+    (cd typeEval cont 6.5 7.25 999 999)     ; Aproximadamente 6 o más, más hacia 10 indica que le gusta evaluacion continua.
+    (cd typeEval neutral 2.5 3.25 6.5 7.5)  ; Aproximadamente Entre 3 y 6, le da igual que sea evaluacion continua o todo al final.
+    (cd typeEval final 0 0 2.5 3.5)         ; Aproximadamente menos de 3, mientra más hacia 0 más le gusta evaluacion al final.
 )
-
-; Obtenemos el cumplimiento de cada conjunto difuso
-;(deffacts reglas
-;(regla 1 antecedente work high)
-;(regla 1 consecuente DDSI high)
-;(regla 1 explicacion "Si la temperatura es normal, la dosis a aplicar es cero")
-;)
 
 (defrule cumplimiento_predicado_difuso
     (declare (salience 3))
@@ -434,7 +427,7 @@
     =>
     (bind ?g (membership ?x ?a ?b ?c ?d))
     (assert (fuzzy cumplimiento ?v ?l ?g))
-    (if (> ?g 0) then (printout t ">>"?v " es " ?l " en grado " ?g crlf))
+    ;(if (> ?g 0) then (printout t ">>"?v " es " ?l " en grado " ?g crlf))
 )
 
 
@@ -587,6 +580,7 @@
 ; ##########################
 
 ;   HECHOS
+;   - Se crea un registro para la base de conocimiento. Se almacenan las asignaturas con información ya recabada de los Expertos y otras fuentes.
 (deftemplate course
     (field ID)
     (field name)
@@ -596,6 +590,12 @@
     (field work)
 )
 
+;   - Hecho para verificar (posteriormente) que una asignatura que se ha ingresado existe en la Base de Conocimiento
+(deffacts validCourses
+    (validCourse FFT FS FP ALEM CA ES TOC IES LMD MP SCD PDOO SO ED EC ALG FIS AC FBD IA IG ISE DDSI MC FR)
+)
+
+;   - Se definen las asignaturas con información de como son de teoricas, practicas, su tipo de evaluacion y que tan trabajosa es.
 (deffacts courseDataBase
 
 ;   1º Curso 1º Cuatrimetre
@@ -842,17 +842,19 @@
 )
 
 ;   REGLAS
-;   Preguntas
+;   Preguntas:
 ;   - Regla inicial.
 (defrule startUpDelta
     (declare (salience 100))
     (module DELTA)
         =>
-    (printout t "-- ELEGIR ENTRE DOS ASIGNATURAS PARA MATRICULAR --" crlf crlf)
+    (printout t "-- ELEGIR ENTRE DOS ASIGNATURAS PARA MATRICULAR --" crlf )
+    (printout t ">>Indica dos asignaturas entre 1er Curso y 3er Curso 1er Cuatrimestre del Grado de Ingenieria Informatica en la UGR" crlf crlf)
     ; Se usa este hecho para evitar que se dispare una sola recomendacion.
     (assert (deduction))
 )
 
+;   - Se preguntan por los cursos.
 (defrule askCourse1
     (deduction)
     (module DELTA)
@@ -861,9 +863,7 @@
     (printout t crlf "--- PREGUNTA ---" crlf ">>Escribir la primera asignatura" crlf ">")
     (bind ?answer (read))
     (retract ?r)
-
-    ; Falta un if aqui
-    (assert (delta course ?answer))
+    (assert (delta course ?answer firstCourse))
 )
 
 (defrule askCourse2
@@ -875,16 +875,28 @@
     (bind ?answer (read))
     (retract ?r)
 
-    ; Falta un if aqui
-    (assert (delta course ?answer))
+    (assert (delta course ?answer secondCourse))
 )
 
+;   - Se chequea si los cursos están en la Base de Conocimiento.
+(defrule checkCourseExists
+    (deduction)
+    (module DELTA)
+    ?r <- (delta course ?ans ?question)
+    ; Si no se encuentra en la regla validCourse, no está en la BC.
+    (not (validCourse $? ?ans $?))
+        =>
+    (printout t ">>Perdona pero '"?ans"' no es un curso valido de entre 1er Curso y 3er Curso 1er Cuatrimestre de GII. Vuelve a intentar." crlf)
+    (retract ?r)
+    (assert (question ?question))
+)
+;   - Se hacen preguntas relativas a las caracteristicas del alumno.
 (defrule askWork
     (deduction)
     (module DELTA)
     ?r <- (question work)
         =>
-    (printout t crlf "--- PREGUNTA ---" crlf  ">>En promedio, cuantas horas le dedicas al estudio? " crlf ">>(Numero mayor o igual a 0)" crlf">")
+    (printout t crlf "--- PREGUNTA ---" crlf  ">>En promedio, cuantas horas le dedicas al estudio diariamente? " crlf ">>(Numero fraccional mayor o igual a 0)" crlf">")
     (bind ?answer (read))
     (retract ?r)
 
@@ -901,7 +913,7 @@
     (module DELTA)
     ?r <- (question practice)
         =>
-    (printout t crlf "--- PREGUNTA ---" crlf  ">>Entre 0 y 10, que tanto te gusta realizar practicas en una asignatura?" crlf ">>(0 - Lo odio | 10 - Me encanta)" crlf">")
+    (printout t crlf "--- PREGUNTA ---" crlf  ">>Entre 0 y 10, que tanto te gusta realizar practicas en una asignatura?" crlf ">>(Numero fraccional entre [0 - Lo odio | 10 - Me encanta])" crlf">")
     (bind ?answer (read))
     (retract ?r)
 
@@ -918,7 +930,7 @@
     (module DELTA)
     ?r <- (question theory)
         =>
-    (printout t crlf "--- PREGUNTA ---" crlf  ">>Entre 0 y 10, que tanto te gusta la teoria en una asignatura?" crlf ">>(0 - Lo odio | 10 - Me encanta)" crlf">")
+    (printout t crlf "--- PREGUNTA ---" crlf  ">>Entre 0 y 10, que tanto te gusta la teoria en una asignatura?" crlf ">>(Numero fraccional entre [0 - Lo odio | 10 - Me encanta])" crlf">")
     (bind ?answer (read))
     (retract ?r)
 
@@ -935,7 +947,7 @@
     (module DELTA)
     ?r <- (question typeEval)
         =>
-    (printout t crlf "--- PREGUNTA ---" crlf  ">>Entre 0 y 10, te gusta mas evaluacion continua o evaluacion al final de todo?" crlf ">>(0 - Me gusta mas evaluacion final  | 10 - Me gusta mas evaluacion continua)" crlf">")
+    (printout t crlf "--- PREGUNTA ---" crlf  ">>Entre 0 y 10, te gusta mas evaluacion continua o evaluacion al final de todo?" crlf ">>(Numero fraccional entre [0 - Me gusta mas evaluacion final  | 10 - Me gusta mas evaluacion continua])" crlf">")
     (bind ?answer (read))
     (retract ?r)
 
@@ -950,58 +962,60 @@
 )
 
 ;   Deducciones
+;   - Se generan, para las asignaturas que se han seleccionado, las reglas de antecentes para la lógica difusa.
 (defrule makeCDforCourse
-    (delta course ?a)
+    (delta course ?a ?)
         =>
-    (assert (cd ?a high 7 7.5 10 10))
+    (assert (cd ?a high 7 7.5 11 11)) ; Si es alto, es decir, entre aprox 7 y 10, es una recomendación alta para esa asignatura.
     (assert (cd ?a mid  4.75 5.5 6.5 7.25))
-    (assert (cd ?a low  0  0 3.5 5))
+    (assert (cd ?a low  0 0 3.5 5))
 )
 
+;   - Se generan dinámicamente las reglas paras las asignaturas elegidas.
+;       + Reglas de Teoría
 (defrule genRuleTheory
-    (delta course ?a)
-    (course (ID ?a) (name ?fullName) (theory ?b))
+    (delta course ?a ?)
+    (course (ID ?a) (theory ?b))
         =>
+    ; Si la asignatura es muy teórica, entonces, ajustar las reglas que se pueden disparar acordemente y sus razonamientos.
     (if (eq high ?b) then
 
-        ; Positive
+        ; "Si al alumno le gusta la teoria y la asignatura es teorica, recomendacion alta."
         (bind ?y (str-cat "high-theory" ?a "-plus"))
         (bind ?x (str-cat  ?a " es teorica y te gusta teoria: es un punto a favor."))
         (assert (regla ?y antecedente theory high))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
+        ; "Si al alumno le da igual la teoria y la asignatura es teorica, mas o menos recomendada."
         (bind ?y (str-cat "high-theory" ?a "-medium"))
         (bind ?x (str-cat ?a " es teorica y te gusta mas o menos teoria: es un punto neutro."))
         (assert (regla ?y antecedente theory mid))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
+        ; "Si al alumno no le gusta la teoría y la asignatura es teorica, no es recomendable."
         (bind ?y (str-cat "high-theory" ?a "-low"))
         (bind ?x (str-cat ?a " es teorica y no te gusta teoria: es un punto en contra."))
         (assert (regla ?y antecedente theory low))
         (assert (regla ?y consecuente ?a low))
         (assert (regla ?y explicacion ?x))
 
+    ;   Ídem como antes.
     else(if (eq mid ?b) then
 
-        ; Positive
         (bind ?y (str-cat "mid-theory" ?a "-plus"))
         (bind ?x (str-cat ?a " es mas o menos teorica y te gusta teoria: es un punto neutro."))
         (assert (regla ?y antecedente theory high))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "mid-theory" ?a "-medium"))
         (bind ?x (str-cat ?a " es mas o menos teorica y asi te gusta: es un punto a favor."))
         (assert (regla ?y antecedente theory mid))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "mid-theory" ?a "-low"))
         (bind ?x (str-cat ?a " es mas o menos teorica y no te gusta teoria: es un punto neutro."))
         (assert (regla ?y antecedente theory low))
@@ -1009,21 +1023,18 @@
         (assert (regla ?y explicacion ?x))
     else
 
-        ; Positive
         (bind ?y (str-cat "low-theory" ?a "-plus"))
         (bind ?x (str-cat ?a " no es teorica y te gusta teoria: es un punto en contra."))
         (assert (regla ?y antecedente theory high))
         (assert (regla ?y consecuente ?a low))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "low-theory" ?a "-medium"))
         (bind ?x (str-cat ?a " no es teorica y te gusta mas o menos teoria: es un punto neutro."))
         (assert (regla ?y antecedente theory mid))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "low-theory" ?a "-low"))
         (bind ?x (str-cat ?a " no es teorica y no te gusta teoria: es un punto a favor."))
         (assert (regla ?y antecedente theory low))
@@ -1032,27 +1043,25 @@
     ))
 )
 
+;       + Reglas de Prácticas
 (defrule genRulePractice
-    (delta course ?a)
-    (course (ID ?a) (name ?fullName) (practice ?b))
+    (delta course ?a ?)
+    (course (ID ?a) (practice ?b))
         =>
     (if (eq high ?b) then
 
-        ; Positive
         (bind ?y (str-cat "high-practice" ?a "-plus"))
         (bind ?x (str-cat  ?a " es practica y te gusta practica: es un punto a favor."))
         (assert (regla ?y antecedente practice high))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "high-practice" ?a "-medium"))
         (bind ?x (str-cat  ?a " es practica y te gusta mas o menos practica: es un punto neutro."))
         (assert (regla ?y antecedente practice mid))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "high-practice" ?a "-low"))
         (bind ?x (str-cat ?a " es practica y no te gusta practica: es un punto en contra."))
         (assert (regla ?y antecedente practice low))
@@ -1060,42 +1069,37 @@
         (assert (regla ?y explicacion ?x))
 
     else(if (eq mid ?b) then
-        ; Positive
+
         (bind ?y (str-cat "mid-practice" ?a "-plus"))
         (bind ?x (str-cat  ?a " es mas o menos practica y te gusta practica: es un punto neutro."))
         (assert (regla ?y antecedente practice high))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "mid-practice" ?a "-medium"))
         (bind ?x (str-cat  ?a " es mas o menos practica y te gusta practica: es un punto a favor."))
         (assert (regla ?y antecedente practice mid))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "mid-practice" ?a "-low"))
         (bind ?x (str-cat  ?a " es mas o menos practica y no te gusta practica: es un punto neutro."))
         (assert (regla ?y antecedente practice low))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
     else
-        ; Positive
         (bind ?y (str-cat "low-practice" ?a "-plus"))
         (bind ?x (str-cat  ?a " no es practica y te gusta practica: es un punto en contra."))
         (assert (regla ?y antecedente practice high))
         (assert (regla ?y consecuente ?a low))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "low-practice" ?a "-medium"))
         (bind ?x (str-cat  ?a " no es practica y te gusta mas o menos practica: es un punto neutro."))
         (assert (regla ?y antecedente practice mid))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "low-practice" ?a "-low"))
         (bind ?x (str-cat  ?a " no es practica y no te gusta practica: es un punto a favor."))
         (assert (regla ?y antecedente practice low))
@@ -1104,26 +1108,24 @@
     ))
 )
 
+;       + Reglas de que trabajoso es.
 (defrule genRuleWork
-    (delta course ?a)
-    (course (ID ?a) (name ?fullName) (work ?b))
+    (delta course ?a ?)
+    (course (ID ?a)  (work ?b))
         =>
     (if (eq high ?b) then
-        ; Positive
         (bind ?y (str-cat "high-work" ?a "-plus"))
         (bind ?x (str-cat  ?a " es trabajosa y eres aplicado: es un punto a favor"))
         (assert (regla ?y antecedente work high))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x ))
 
-        ; Medium
         (bind ?y (str-cat "high-work" ?a "-medium"))
         (bind ?x (str-cat  ?a " es trabajosa y eres medio aplicado: es un punto neutro"))
         (assert (regla ?y antecedente work mid))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x ))
 
-        ; Low
         (bind ?y (str-cat "high-work" ?a "-low"))
         (bind ?x (str-cat  ?a " es trabajosa y no eres aplicado: es un punto en contra"))
         (assert (regla ?y antecedente work low))
@@ -1131,42 +1133,36 @@
         (assert (regla ?y explicacion ?x ))
 
     else(if (eq mid ?b) then
-        ; Positive
         (bind ?y (str-cat "mid-work" ?a "-plus"))
         (bind ?x (str-cat  ?a " es  mas o menos trabajosa y eres aplicado: es un punto a favor, mas tiempo libre."))
         (assert (regla ?y antecedente work high))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "mid-work" ?a "-medium"))
         (bind ?x (str-cat  ?a " es mas o menos trabajosa y eres medio aplicado: es un punto a favor."))
         (assert (regla ?y antecedente work mid))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "mid-work" ?a "-low"))
         (bind ?x (str-cat  ?a " es  mas o menos trabajosa y no eres aplicado: es un punto en contra."))
         (assert (regla ?y antecedente work low))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
     else
-        ; Positive
         (bind ?y (str-cat "low-work" ?a "-plus"))
         (bind ?x (str-cat  ?a " no es trabajosa y eres aplicado: es un punto a favor, se aprueba sola."))
         (assert (regla ?y antecedente work high))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "low-work" ?a "-medium"))
         (bind ?x (str-cat  ?a " no es trabajosa y eres medio aplicado: es un punto a favor, relax."))
         (assert (regla ?y antecedente work mid))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "low-work" ?a "-low"))
         (bind ?x (str-cat  ?a " no es trabajosa y eres no eres aplicado: es un punto a favor."))
         (assert (regla ?y antecedente work low))
@@ -1175,26 +1171,24 @@
     ))
 )
 
+        ; + Reglas del tipo de evaluación
 (defrule genRuleEval
-    (delta course ?a)
-    (course (ID ?a) (name ?fullName) (typeEv ?b))
+    (delta course ?a ?)
+    (course (ID ?a) (typeEv ?b))
         =>
     (if (eq cont ?b) then
-        ; Positive
         (bind ?y (str-cat "cont-typeEval" ?a "-plus"))
         (bind ?x (str-cat  ?a " utiliza mayoritariamente evaluacion continua y te gusta: es un punto a favor."))
         (assert (regla ?y antecedente typeEval cont))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "cont-typeEval" ?a "-medium"))
         (bind ?x (str-cat  ?a " utiliza mayoritariamente evaluacion continua y da igual: es un neutro."))
         (assert (regla ?y antecedente typeEval neutral))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "cont-typeEval" ?a "-low"))
         (bind ?x (str-cat  ?a " utiliza mayoritariamente evaluacion continua y no te gusta asi: es un punto en contra."))
         (assert (regla ?y antecedente typeEval final))
@@ -1202,42 +1196,36 @@
         (assert (regla ?y explicacion ?x))
 
     else(if (eq neutral ?b) then
-        ; Positive
         (bind ?y (str-cat "mid-typeEval" ?a "-plus"))
         (bind ?x (str-cat  ?a " tiene un balance de evaluacion continua y al final pero prefieres continua: es un punto neutro."))
         (assert (regla ?y antecedente typeEval cont))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "mid-typeEval" ?a "-medium"))
         (bind ?x (str-cat  ?a " tiene un balance de evaluacion continua y al final y te da igual: es un punto a favor."))
         (assert (regla ?y antecedente typeEval neutral))
         (assert (regla ?y consecuente ?a high))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "mid-typeEval" ?a "-low"))
         (bind ?x (str-cat  ?a " tiene un balance de evaluacion continua y al final pero prefieres al final: es un punto neutro."))
         (assert (regla ?y antecedente typeEval final))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
     else
-        ; Positive
         (bind ?y (str-cat "final-typeEval" ?a "-plus"))
         (bind ?x (str-cat  ?a " utiliza mayoritariamente evaluacion al final y no te gusta asi: es un punto en contra"))
         (assert (regla ?y antecedente typeEval cont))
         (assert (regla ?y consecuente ?a low))
         (assert (regla ?y explicacion ?x))
 
-        ; Medium
         (bind ?y (str-cat "final-typeEval" ?a "-medium"))
         (bind ?x (str-cat  ?a " utiliza mayoritariamente evaluacion al final y te da igual: es un punto neutro"))
         (assert (regla ?y antecedente typeEval neutral))
         (assert (regla ?y consecuente ?a mid))
         (assert (regla ?y explicacion ?x))
 
-        ; Low
         (bind ?y (str-cat "final-typeEval" ?a "-low"))
         (bind ?x (str-cat  ?a " utiliza mayoritariamente evaluacion al final y asi te gusta: es un punto a favor"))
         (assert (regla ?y antecedente typeEval final))
@@ -1246,11 +1234,13 @@
     ))
 )
 
+;   - Se define un registro sencillo para convertir lo que retorna el módulo GAMMA para imprimir por pantalla la recomendación.
 (deftemplate endValue
     (slot ID)
     (slot val)
 )
 
+;   - Regla que realiza la conversión.
 (defrule fillEndValue
     (module DELTA)
     (fuzzy valor_inferido ?a ?b)
@@ -1258,14 +1248,17 @@
     (assert (endValue (ID ?a) (val ?b)))
 )
 
+;   - Regla que imprime por pantalla la recomendación dados los razonamientos del módulo GAMMA.
 (defrule giveAnswer
     (declare (salience -10))
-    (module DELTA)
+    ?r <- (module DELTA)
     (endValue (ID ?name1) (val ?value1))
+    ; Esto es para que, de las dos asignaturas, se imprima el valor de recomendación mayor.
     (not (endValue (val ?value2&:(> ?value2 ?value1))))
     (course (ID ?name1) (name ?fullName))
         =>
-    (printout t crlf "### RESPUESTA RECOMENDADOR MATRICULA ###" crlf ">> Dados los hechos expuestos anteriormente, recomiendo " ?fullName "." crlf ">> Le doy una valoracion de " ?value1"/10 a que te gustara." crlf)
+    (printout t crlf "### RESPUESTA RECOMENDADOR MATRICULA ###" crlf ">> Dados los hechos expuestos anteriormente, recomiendo " ?fullName "." crlf ">> Le doy una valoracion de " ?value1"/10 a que te va a gustar." crlf)
+    (retract ?r)
 )
 
 ; ##########################
