@@ -384,41 +384,6 @@
     ?rv
 )
 
- 
-;;;;;;;;;;;;;;;;;;;;;;;;;; CONOCIMIENTO ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Definimos de las variables del sistema
-
-(deffacts variables_difusas
-    (variable work)
-    (variable practice)
-    (variable theory)
-    (variable typeEval)
-)
-
-(deffacts conjuntos_difusos
-    
-    ; Trabajo
-    (cd work high 3.5 5 999 999)     ; Aproximadamente 5 o más horas diarias de trabajo.      
-    (cd work mid 1.25 2 4 5)         ; ''              entre 3 y 5 horas diarias de trabajo.
-    (cd work low 0 0 1 1.75)         ; ''              3 o menos horas diarias de trabajo.
-
-    ; Practica
-    (cd practice high 6.5 7.25 999 999)   ; Aproximadamente 7 o más de gusto por prácticas de 10.
-    (cd practice mid 2.5 3.25 6.5 7.5)    ; Aproximadamente entre 3 y 7 de gusto por prácticas de 10.
-    (cd practice low 0 0 2.5 3.5)         ; Aproximadamente entre 0 y 3 de gusto por prácticas de 10.
-    
-    ; Teoría
-    (cd theory high 6.5 7.25 999 999)     ;Ídem para teoría.
-    (cd theory mid 2.5 3.25 6.5 7.5)
-    (cd theory low 0 0 2.5 3.5)
-
-    ; Evaluación
-    (cd typeEval cont 6.5 7.25 999 999)     ; Aproximadamente 6 o más, más hacia 10 indica que le gusta evaluacion continua.
-    (cd typeEval neutral 2.5 3.25 6.5 7.5)  ; Aproximadamente Entre 3 y 6, le da igual que sea evaluacion continua o todo al final.
-    (cd typeEval final 0 0 2.5 3.5)         ; Aproximadamente menos de 3, mientra más hacia 0 más le gusta evaluacion al final.
-)
-
 (defrule cumplimiento_predicado_difuso
     (declare (salience 3))
     (modulo calculo_fuzzy)
@@ -595,6 +560,38 @@
     (validCourse FFT FS FP ALEM CA ES TOC IES LMD MP SCD PDOO SO ED EC ALG FIS AC FBD IA IG ISE DDSI MC FR)
 )
 
+;   - Definición de variables difusas para el módulo GAMMA de Lógica Difusa
+
+(deffacts variables_difusas
+    (variable work)
+    (variable practice)
+    (variable theory)
+    (variable typeEval)
+)
+
+(deffacts conjuntos_difusos
+    
+    ; Trabajo
+    (cd work high 3.5 5 999 999)     ; Aproximadamente 5 o más horas diarias de trabajo.      
+    (cd work mid 1.25 2 4 5)         ; ''              entre 3 y 5 horas diarias de trabajo.
+    (cd work low 0 0 1 1.75)         ; ''              3 o menos horas diarias de trabajo.
+
+    ; Practica
+    (cd practice high 6.5 7.25 999 999)   ; Aproximadamente 7 o más de gusto por prácticas de 10.
+    (cd practice mid 2.5 3.25 6.5 7.5)    ; Aproximadamente entre 3 y 7 de gusto por prácticas de 10.
+    (cd practice low 0 0 2.5 3.5)         ; Aproximadamente entre 0 y 3 de gusto por prácticas de 10.
+    
+    ; Teoría
+    (cd theory high 6.5 7.25 999 999)     ;Ídem para teoría.
+    (cd theory mid 2.5 3.25 6.5 7.5)
+    (cd theory low 0 0 2.5 3.5)
+
+    ; Evaluación
+    (cd typeEval cont 6.5 7.25 999 999)     ; Aproximadamente 6 o más, más hacia 10 indica que le gusta evaluacion continua.
+    (cd typeEval neutral 2.5 3.25 6.5 7.5)  ; Aproximadamente Entre 3 y 6, le da igual que sea evaluacion continua o todo al final.
+    (cd typeEval final 0 0 2.5 3.5)         ; Aproximadamente menos de 3, mientra más hacia 0 más le gusta evaluacion al final.
+)
+
 ;   - Se definen las asignaturas con información de como son de teoricas, practicas, su tipo de evaluacion y que tan trabajosa es.
 (deffacts courseDataBase
 
@@ -622,26 +619,26 @@
         (name "Fundamentos de Programacion")
         (theory low)
         (practice high)
-        (typeEv lovesFinal)
+        (typeEv neutral)
         (work high)
     )   
 
     (course 
         (ID ALEM)
         (name "Algebra Lineal y Estructuras Matematicas")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
-        (work high)
+        (theory high)
+        (practice high)
+        (typeEv final)
+        (work mid)
     )   
 
     (course 
         (ID CA)
         (name "Calculo")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
-        (work high)
+        (theory high)
+        (practice high)
+        (typeEv final)
+        (work mid)
     )   
 
 ;   1º Curso 2º Cuatrimetre
@@ -657,10 +654,10 @@
     (course 
         (ID TOC)
         (name "Tecnologia y Organizacion de Computadores")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
-        (work high)
+        (theory mid)
+        (practice mid)
+        (typeEv neutral)
+        (work low)
     )   
 
     (course 
@@ -675,18 +672,18 @@
     (course 
         (ID LMD)
         (name "Logica y Metodos Discretos")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
+        (theory high)
+        (practice high)
+        (typeEv final)
         (work high)
     )
 
     (course 
         (ID MP)
         (name "Metodologia de Programacion")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
+        (theory low)
+        (practice high)
+        (typeEv neutral)
         (work high)
     )
 
@@ -721,19 +718,19 @@
     (course 
         (ID ED)
         (name "Estructuras de Datos")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
+        (theory low)
+        (practice high)
+        (typeEv neutral)
         (work high)
     )   
 
     (course 
         (ID EC)
         (name "Estructura de Computadores")
-        (theory doesntLike)
-        (practice loves)
-        (typeEv lovesFinal)
-        (work high)
+        (theory mid)
+        (practice mid)
+        (typeEv final)
+        (work mid)
     )   
 
 ;   2º Curso 2º Cuatrimestre
@@ -836,7 +833,6 @@
     (question practice)
     (question theory)
     (question typeEval)
-    (question priority)
     (question firstCourse)
     (question secondCourse)
 )
@@ -860,7 +856,7 @@
     (module DELTA)
     ?r <- (question firstCourse)
         =>
-    (printout t crlf "--- PREGUNTA ---" crlf ">>Escribir la primera asignatura" crlf ">")
+    (printout t crlf "--- PREGUNTA ---" crlf ">>Escribir la primera asignatura" crlf ">>(Formato corto, ejemplo: IA, FBD, DDSI,...)" crlf ">")
     (bind ?answer (read))
     (retract ?r)
     (assert (delta course ?answer firstCourse))
